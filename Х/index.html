@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Викторина нашей любви</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #ecf0f1;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(26, 26, 46, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #34495e;
+        }
+
+        .screen {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 10px rgba(231, 76, 60, 0.5);
+        }
+
+        h2 {
+            color: #9b59b6;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .intro-text {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: #bdc3c7;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #ecf0f1;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            border: 2px solid #34495e;
+            border-radius: 12px;
+            background: #34495e;
+            color: #ecf0f1;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            border-color: #9b59b6;
+            background: #4a235a;
+            transform: translateY(-2px);
+        }
+
+        .option-btn.selected {
+            border-color: #9b59b6;
+            background: #4a235a;
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+        }
+
+        .option-btn.correct {
+            border-color: #27ae60;
+            background: #2ecc71;
+            color: #2c3e50;
+        }
+
+        .option-btn.wrong {
+            border-color: #c0392b;
+            background: #e74c3c;
+            color: white;
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #34495e;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #9b59b6);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #9b59b6;
+        }
+
+        .confirm-btn {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            margin-top: 10px;
+        }
+
+        .multiple-hint {
+            text-align: center;
+            color: #9b59b6;
+            font-style: italic;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 2rem;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s;
+            user-select: none;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .heart:hover {
+            transform: scale(1.3) rotate(10deg);
+            animation: none;
+        }
+
+        .memory-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #34495e;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            display: none;
+            border: 1px solid #4a6278;
+            animation: popIn 0.5s ease;
+        }
+
+        .memory-popup.active {
+            display: block;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .memory-image-container {
+            width: 100%;
+            max-width: 300px;
+            height: 300px;
+            margin: 0 auto 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid #4a6278;
+            position: relative;
+            background: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .memory-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .memory-image:hover {
+            transform: scale(1.05);
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #34495e;
+            color: #bdc3c7;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .memory-date {
+            font-weight: bold;
+            color: #9b59b6;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .memory-text {
+            color: #ecf0f1;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .close-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .letter-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            font-size: 2.5rem;
+            cursor: pointer;
+            box-shadow: 0 15px 30px rgba(231, 76, 60, 0.4);
+            z-index: 20;
+            display: none;
+            animation: pulse 2s infinite;
+            transition: all 0.3s ease;
+        }
+
+        .letter-btn.active {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .congratulations {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            display: none;
+        }
+
+        .congratulations.active {
+            display: flex;
+        }
+
+        .congratulations-content {
+            background: #2c3e50;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 90%;
+            width: 550px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+            animation: popIn 0.8s ease;
+            border: 1px solid #34495e;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .congratulations h2 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        .congratulations p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+            color: #ecf0f1;
+        }
+
+        .counter {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(52, 73, 94, 0.9);
+            padding: 15px 20px;
+            border-radius: 15px;
+            color: #ecf0f1;
+            font-size: 1.1rem;
+            z-index: 25;
+            display: none;
+            border: 1px solid #4a6278;
+        }
+
+        .counter.active {
+            display: block;
+        }
+
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            cursor: pointer;
+        }
+
+        .fullscreen-overlay.active {
+            display: flex;
+        }
+
+        .fullscreen-image {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+        }
+
+        .close-fullscreen {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 301;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .screen {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .letter-btn {
+                width: 100px;
+                height: 100px;
+                bottom: 20px;
+                right: 20px;
+                font-size: 2rem;
+            }
+            
+            .congratulations-content {
+                padding: 25px;
+            }
+            
+            .memory-image-container {
+                max-width: 250px;
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="start-screen" class="screen active">
+            <div style="text-align: center; font-size: 4rem; margin-bottom: 20px;">💖</div>
+            <h1>Викторина нашей любви</h1>
+            <p class="intro-text">Дорогая, эта викторина расскажет историю наших чувств. Проверим, насколько хорошо ты помнишь важные моменты нашей любви!</p>
+            <button class="btn" onclick="startQuiz()">Начать викторину 💝</button>
+        </div>
+
+        <div id="quiz-screen" class="screen">
+            <div class="progress-container">
+                <div class="progress-text" id="progress-text">Вопрос 1 из 7</div>
+                <div class="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+            </div>
+            
+            <div class="question-container">
+                <h2 id="question-number">Вопрос 1</h2>
+                <div class="question-text" id="question-text"></div>
+                <div id="multiple-hint" class="multiple-hint" style="display: none;">Можно выбрать несколько вариантов</div>
+                <div class="options" id="options"></div>
+            </div>
+        </div>
+
+        <div id="hearts-screen" class="screen">
+            <h1>Поздравляю с прохождением!</h1>
+            <p class="intro-text">Теперь нажми на сердечки, чтобы увидеть наши особенные моменты (В будущем их будет больше и больше) 💕</p>
+            <p class="intro-text" id="counter-text">Найдено воспоминаний: 0/3</p>
+        </div>
+    </div>
+
+    <div class="counter" id="counter">Найдено: 0/3</div>
+
+    <div class="hearts-container" id="hearts-container"></div>
+
+    <div class="memory-popup" id="memory-popup">
+        <div class="memory-date" id="popup-date"></div>
+        <div class="memory-text" id="popup-text"></div>
+        <div class="memory-image-container" id="popup-image-container">
+            <div class="image-placeholder">Загрузка фото...</div>
+        </div>
+        <button class="close-btn" onclick="closeMemory()">Закрыть</button>
+    </div>
+
+    <button class="letter-btn" id="letter-btn">💌</button>
+
+    <div class="fullscreen-overlay" id="fullscreen-overlay">
+        <button class="close-fullscreen" onclick="closeFullscreen()">×</button>
+        <img class="fullscreen-image" id="fullscreen-image" src="" alt="Полноэкранное фото">
+    </div>
+
+    <div class="congratulations" id="congratulations">
+        <div class="congratulations-content">
+            <h2>С Днём Рождения! 🎂</h2>
+            <p>Поздравляю тебя, моя любимая, дорогая, принцесса, Кастрюля)), с днём рождения!</p>
+            <p>Надеюсь, тебе мой подарок понравился.</p>
+            <p>Желаю тебе всего самого наилучшего: счастья, денег, здоровья (особенно здоровое сердце, а то где я буду ещё жить). Желаю, чтобы все твои планы сбылись, как и мечты.</p>
+            <p>Не буду огромный текст писать, хотя мне такое нравится. Поздравляю тебя с твоим особенным днём, праздником!</p>
+            <p>Люблю тебя очень, очень, очень, очень, очень сильно! </p>
+            <p>Спасибо что радуешь меня своим ангельским голоском</p>
+            
+            <button class="btn" onclick="closeCongratulations()" style="margin-top: 20px;">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Первый день, когда мы начали общаться?",
+                options: ["10 октября", "20 октября", "15 октября", "13 октября"],
+                correct: 3,
+                multiple: false
+            },
+            {
+                question: "День моего признания в любви?",
+                options: ["18 октября", "20 октября", "22 октября", "25 октября"],
+                correct: 1,
+                multiple: false
+            },
+            {
+                question: "Мой день рождения?",
+                options: ["22 февраля", "30 февраля", "25 февраля", "28 февраля"],
+                correct: 0,
+                multiple: false
+            },
+            {
+                question: "Что я обычно делаю?",
+                options: ["Сплю", "Работаю", "Общаюсь с тобой", "Смотрю фильмы"],
+                correct: [0, 2],
+                multiple: true
+            },
+            {
+                question: "Что я люблю в тебе больше всего?",
+                options: ["Твои глаза", "Твой характер", "Твой голос и смех", "Всё сразу"],
+                correct: 3,
+                multiple: false
+            },
+            {
+                question: "Ревнивый ли я?",
+                options: ["Нет", "Иногда", "Да", "Очень"],
+                correct: 3,
+                multiple: false
+            },
+            {
+                question: "Ты меня любишь?",
+                options: ["ДА"],
+                correct: 0,
+                multiple: false
+            }
+        ];
+
+        const memories = [
+            {
+                date: "16 октября",
+                text: "Моё признание без ответа",
+                image: "5215439621909580782.jpg"
+            },
+            {
+                date: "20 октября",
+                text: "Моё признание с ответом",
+                image: "5215439621909580784.jpg"
+            },
+            {
+                date: "29 октября",
+                text: "Стих",
+                image: "5215439621909580785.jpg"
+            },
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswers = [];
+        let hearts = [];
+        let foundMemories = 0;
+
+        function loadImageWithFallback(container, imageUrl, memoryIndex) {
+            container.innerHTML = '<div class="image-placeholder">Загрузка фото...</div>';
+            
+            const img = new Image();
+            img.onload = function() {
+                container.innerHTML = '';
+                const loadedImg = document.createElement('img');
+                loadedImg.className = 'memory-image';
+                loadedImg.src = imageUrl;
+                loadedImg.alt = `Воспоминание ${memoryIndex + 1}`;
+                
+                loadedImg.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openFullscreen(imageUrl);
+                });
+                
+                container.appendChild(loadedImg);
+            };
+            
+            img.onerror = function() {
+                container.innerHTML = '<div class="image-placeholder">Фото не найдено</div>';
+            };
+            
+            img.src = imageUrl;
+        }
+
+        function openFullscreen(imageUrl) {
+            const fullscreenImage = document.getElementById('fullscreen-image');
+            const overlay = document.getElementById('fullscreen-overlay');
+            
+            fullscreenImage.src = imageUrl;
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFullscreen() {
+            const overlay = document.getElementById('fullscreen-overlay');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('fullscreen-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFullscreen();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeFullscreen();
+            }
+        });
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('quiz-screen').classList.add('active');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('question-number').textContent = `Вопрос ${currentQuestion + 1}`;
+            document.getElementById('question-text').textContent = question.question;
+            
+            const multipleHint = document.getElementById('multiple-hint');
+            multipleHint.style.display = question.multiple ? 'block' : 'none';
+            
+            document.getElementById('progress-text').textContent = `Вопрос ${currentQuestion + 1} из ${questions.length}`;
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            selectedAnswers = [];
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            if (question.multiple) {
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'btn confirm-btn';
+                confirmBtn.textContent = 'Подтвердить выбор';
+                confirmBtn.onclick = checkMultipleAnswers;
+                confirmBtn.id = 'confirm-btn';
+                optionsContainer.appendChild(confirmBtn);
+                updateConfirmButton();
+            }
+        }
+
+        function selectAnswer(index) {
+            const question = questions[currentQuestion];
+            
+            if (question.multiple) {
+                const optionBtn = document.querySelectorAll('.option-btn')[index];
+                
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    optionBtn.classList.remove('selected');
+                } else {
+                    selectedAnswers.push(index);
+                    optionBtn.classList.add('selected');
+                }
+                
+                updateConfirmButton();
+            } else {
+                checkSingleAnswer(index);
+            }
+        }
+
+        function updateConfirmButton() {
+            const confirmBtn = document.getElementById('confirm-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = selectedAnswers.length === 0;
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const question = questions[currentQuestion];
+            const options = document.querySelectorAll('.option-btn');
+            
+            if (selectedIndex === question.correct) {
+                options[selectedIndex].classList.add('correct');
+                score++;
+            } else {
+                options[selectedIndex].classList.add('wrong');
+                options[question.correct].classList.add('correct');
+            }
+            
+            options.forEach(btn => {
+                btn.style.pointerEvents = 'none';
+            });
+            
+            setTimeout(nextQuestion, 1500);
+        }
+
+        function checkMultipleAnswers() {
+            const question = questions[currentQuestion];
+            const options = document.querySelectorAll('.option-btn');
+            
+            const isCorrect = selectedAnswers.length === question.correct.length &&
+                             question.correct.every(idx => selectedAnswers.includes(idx));
+            
+            options.forEach((btn, index) => {
+                if (question.correct.includes(index)) {
+                    btn.classList.add('correct');
+                } else if (selectedAnswers.includes(index) && !question.correct.includes(index)) {
+                    btn.classList.add('wrong');
+                }
+            });
+            
+            if (isCorrect) {
+                score++;
+            }
+            
+            options.forEach(btn => {
+                btn.style.pointerEvents = 'none';
+            });
+            
+            document.getElementById('confirm-btn').style.display = 'none';
+            
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showHeartsScreen();
+            }
+        }
+
+        function showHeartsScreen() {
+            document.getElementById('quiz-screen').classList.remove('active');
+            document.getElementById('hearts-screen').classList.add('active');
+            document.getElementById('counter').classList.add('active');
+            document.getElementById('progress').style.width = '100%';
+            createHearts();
+        }
+
+        function createHearts() {
+            const container = document.getElementById('hearts-container');
+            const colors = ['#e74c3c', '#ff6b6b', '#ff8e8e', '#ff5252', '#ff4081', '#f50057'];
+            
+            memories.forEach((memory, index) => {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '💖';
+                heart.style.color = colors[index];
+                heart.style.fontSize = `${30 + Math.random() * 20}px`;
+                heart.dataset.memoryIndex = index;
+                heart.dataset.found = 'false';
+                
+                const startX = Math.random() * (window.innerWidth - 50);
+                const startY = Math.random() * (window.innerHeight - 50);
+                
+                heart.style.left = `${startX}px`;
+                heart.style.top = `${startY}px`;
+                
+                const speedX = (Math.random() - 0.5) * 2;
+                const speedY = (Math.random() - 0.5) * 2;
+                
+                container.appendChild(heart);
+                
+                hearts.push({
+                    element: heart,
+                    x: startX,
+                    y: startY,
+                    speedX: speedX,
+                    speedY: speedY,
+                    memoryIndex: index,
+                    found: false
+                });
+                
+                heart.addEventListener('click', () => {
+                    if (!heart.dataset.found || heart.dataset.found === 'false') {
+                        showMemory(index);
+                        heart.dataset.found = 'true';
+                        hearts[index].found = true;
+                        foundMemories++;
+                        updateCounter();
+                        
+                        if (foundMemories === memories.length) {
+                            setTimeout(() => {
+                                document.getElementById('letter-btn').classList.add('active');
+                            }, 1000);
+                        }
+                    }
+                });
+            });
+            
+            animateHearts();
+        }
+
+        function animateHearts() {
+            hearts.forEach(heart => {
+                heart.x += heart.speedX;
+                heart.y += heart.speedY;
+                
+                if (heart.x <= 0 || heart.x >= window.innerWidth - 50) {
+                    heart.speedX *= -1;
+                }
+                
+                if (heart.y <= 0 || heart.y >= window.innerHeight - 50) {
+                    heart.speedY *= -1;
+                }
+                
+                heart.element.style.left = `${heart.x}px`;
+                heart.element.style.top = `${heart.y}px`;
+            });
+            
+            requestAnimationFrame(animateHearts);
+        }
+
+        function showMemory(index) {
+            const memory = memories[index];
+            document.getElementById('popup-date').textContent = memory.date;
+            document.getElementById('popup-text').textContent = memory.text;
+            
+            const imageContainer = document.getElementById('popup-image-container');
+            loadImageWithFallback(imageContainer, memory.image, index);
+            
+            document.getElementById('memory-popup').classList.add('active');
+        }
+
+        function closeMemory() {
+            document.getElementById('memory-popup').classList.remove('active');
+        }
+
+        function updateCounter() {
+            document.getElementById('counter').textContent = `Найдено: ${foundMemories}/${memories.length}`;
+            document.getElementById('counter-text').textContent = `Найдено воспоминаний: ${foundMemories}/${memories.length}`;
+        }
+
+        function showCongratulations() {
+            document.getElementById('congratulations').classList.add('active');
+        }
+
+        function closeCongratulations() {
+            document.getElementById('congratulations').classList.remove('active');
+        }
+
+        document.getElementById('letter-btn').addEventListener('click', showCongratulations);
+
+        document.getElementById('memory-popup').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('memory-popup')) {
+                closeMemory();
+            }
+        });
+
+        document.getElementById('congratulations').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('congratulations')) {
+                closeCongratulations();
+            }
+        });
+    </script>
+</body>
+</html>
